@@ -34,7 +34,7 @@ function run = exp_read_config( run_nmb, prj_nmb )
 % same directory that also contains 'experiment/exp_read_data'
 if ~exist('str_dejitter','file')
     path_to_expreaddata = which( 'exp_read_data' );
-    str_lookahead = [ 'experiment' filesep 'exp_read_data' ];
+    str_lookahead = [ 'experiment' filesep 'experiment_read_tank_data' filesep 'exp_read_data' ];
     expression = [ '.*(?=' str_lookahead ')' ];
     path_to_directory = regexp( path_to_expreaddata, expression, 'match' );
     path_to_function = [ path_to_directory{:} 'string_manipulation' ];
@@ -81,14 +81,20 @@ while ~strcmp( str, '[Sources]' )
     cfd = regexp(str,'^.*(?==)','match');
     % match everything in str after '=' to get the field value
     cvl = regexp(str,'(?<==).*$', 'match');
-    % convert char to number if possible
-    [ vle, sts ] = str2num( cvl{1} );
-    if sts
-        % assign field value to field
-        run.system.(cfd{1}) = vle;
+    % check for zeros length of cvl
+    if ~isempty(cvl)
+        % convert char to number if possible
+        [ vle, sts ] = str2num( cvl{1} );
+        if sts
+            % assign field value to field
+            run.system.(cfd{1}) = vle;
+        else
+            run.system.(cfd{1}) = cvl{1};
+        end
     else
-        run.system.(cfd{1}) = cvl{1};
+        run.system.(cfd{1}) = '';
     end
+
     str = fgetl(fid);
 end
 
